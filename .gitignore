@@ -1,0 +1,41 @@
+# 依赖
+node_modules/
+
+# 构建与打包产物（client/dist 除外——故意入库，支持从 git 直接安装）
+release/
+*.tgz
+
+# 日志
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# 环境变量（示例文件除外）
+.env
+.env.*
+!.env.example
+
+# 编辑器 / IDE
+.idea/
+.vscode/
+
+# 操作系统
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# 测试覆盖率
+coverage/
+
+# 本地约定
+.dsh-evolution-local/
+
+# 工具本地状态（mimosa 的评审账本 / 钩子状态 / 报告，含会话 id，属机器本地数据）
+.mimosa/
+
+# 过程文档只活在开发库（见开发库 docs/RELEASE.md），不进发版库
+docs/HANDOFF.md
+docs/RELEASE.md
+docs/GITHUB.md
