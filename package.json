@@ -1,0 +1,81 @@
+{
+  "name": "dsh-evolution",
+  "version": "0.2.2",
+  "description": "Local-first self-evolution plugin for DSH：把开发会话记成本地账本，用你自己已配好的模型做跨会话复盘，将踩过的坑与有效做法沉淀成本地知识；默认不联网、不上传、可一键导出。",
+  "type": "module",
+  "main": "lib/index.js",
+  "author": "wycto",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wycto/dsh-evolution.git"
+  },
+  "homepage": "https://github.com/wycto/dsh-evolution#readme",
+  "bugs": {
+    "url": "https://github.com/wycto/dsh-evolution/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./client/dist/index.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "client/dist",
+    "cordis.patch.yml",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "node client/build.mjs",
+    "dev": "node scripts/dev-watch.mjs",
+    "dev:web": "node client/watch.mjs",
+    "check": "node --check lib/index.js && node --check lib/routes.js && node --check lib/config.js && node --check lib/config-store.js && node --check lib/ledger.js && node --check lib/ledger-store.js && node --check lib/storage-adapter.js && node --check lib/storage-sqlite.js && node --check lib/storage-remote.js && node --check lib/redact.js && node --check lib/repo.js && node --check lib/storage.js && node --check lib/paths.js && node --check lib/inject.js && node --check lib/dry-run.js && node --check lib/insights-store.js && node --check lib/insight-rules.js && node --check lib/llm.js && node --check lib/prompt.js && node --check lib/review.js && node --check lib/retrieve.js && node --check lib/inject-cache.js && node --check lib/export.js",
+    "test": "node scripts/smoke.mjs && node scripts/integration.mjs",
+    "prepack": "node client/build.mjs",
+    "pack": "npm pack --pack-destination release",
+    "gui-check": "node scripts/gui-check.mjs",
+    "test:all": "node scripts/smoke.mjs && node scripts/integration.mjs && node scripts/gui-check.mjs"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/dsh": "*"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-runtime"
+      ]
+    }
+  },
+  "keywords": [
+    "dsh",
+    "deepseek-harness",
+    "dsh-plugin",
+    "cordis",
+    "cordis-plugin",
+    "plugin",
+    "coding-agent",
+    "ai-agents",
+    "llm",
+    "agent-memory",
+    "memory",
+    "local-first",
+    "offline-first",
+    "privacy",
+    "self-evolving",
+    "session-logging",
+    "knowledge-management",
+    "developer-tools"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  }
+}
