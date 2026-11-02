@@ -15,6 +15,13 @@ on:
 permissions:
   contents: read
 
+# 一次发版会同时推 master 与标签，GitHub 会为此起两个运行。两个运行并发地在 Gitee 上
+# 创建同一个新引用时，后到的那次会被回「reference already exists」（创建引用的竞态）。
+# 串行执行即可消除：后一个运行等前一个结束（此时引用已存在，走 --force 更新而不是创建）。
+concurrency:
+  group: sync-gitee
+  cancel-in-progress: false
+
 jobs:
   mirror:
     name: 推送分支与标签到 Gitee
@@ -40,13 +47,30 @@ jobs:
         # refs/heads/master；分支触发的运行里 master 正被检出，又不能 fetch 回
         # refs/heads/*（会 fatal: refusing to fetch into branch checked out）。
         # 统一取到 remote-tracking 引用，配合下面按 remote-tracking 推送，prune 的
-        # 比对基准才正确。
+        # 比对基准才正确——否则 tag 触发的运行会把远端 master 当成「待删分支」被 Gitee
+        # 拒绝（refusing to delete the current branch），分支触发的运行可能因本地
+        # 缺标签而把远端标签 prune 掉（发行版因此连带消失）。
         run: |
           git fetch origin '+refs/heads/*:refs/remotes/origin/*'
           git fetch origin '+refs/tags/*:refs/tags/*'
 
       - name: 同步分支
-        run: git push --force --prune gitee 'refs/remotes/origin/*:refs/heads/*'
+        # 只推真正的分支，**必须排除 refs/remotes/origin/HEAD**：它是 checkout 造出来
+        # 的符号引用，指向 origin/master。用 `refs/remotes/origin/*` 通配会把它当成
+        # 普通分支，在 Gitee 上创建出一个 refs/heads/HEAD —— 远端多出一条叫 HEAD 的
+        # 分支（还会被设成默认分支、删都删不掉，因为「不能删除当前分支」）。
+        # 2026-11-02 给 dsh-dock 加镜像时实际踩到，本地复现才看出推的是 origin/HEAD。
+        run: |
+          refs=$(git for-each-ref --format='%(refname)' refs/remotes/origin/ \
+            | grep -v '^refs/remotes/origin/HEAD$' \
+            | sed 's|^refs/remotes/origin/|refs/heads/|')
+          if [ -z "$refs" ]; then
+            echo "没有可同步的分支" >&2
+            exit 1
+          fi
+          echo "$refs"
+          # shellcheck disable=SC2086
+          git push --force --prune gitee $refs
 
       - name: 同步标签
         run: git push --force --prune gitee 'refs/tags/*:refs/tags/*'
